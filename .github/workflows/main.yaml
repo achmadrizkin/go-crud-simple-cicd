@@ -41,42 +41,18 @@ jobs:
           password: ${{ secrets.VPS_PASSWORD }}
           port: ${{ secrets.VPS_PORT }}
           script: |
-            # Check Docker version to ensure it's installed
-            docker --version
+            whoami
+            docker stop go-crud-simple-cicd || true && docker rm go-crud-simple-cicd || true
 
-            # Pull the latest MySQL and app images
             docker pull mysql:latest
             docker pull achmadrizkinf298/go-crud-simple-cicd:latest
 
-            # Create the backend network
-            docker network create backend || true
+            docker run -d --name mysql-db -p 3306:3306 \ -e MYSQL_ROOT_PASSWORD=root1234 \ -e MYSQL_DATABASE=go-crud-simple-cicd \ mysql:latest
 
-            # Stop and remove any existing containers (if they exist)
-            docker stop mysql-container || true
-            docker rm mysql-container || true
-            docker stop go-crud-simple-cicd || true
-            docker rm go-crud-simple-cicd || true
+            # Wait for MySQL to initialize (give it some time to set up)
+            echo "Waiting for MySQL to start..."
+            sleep 20
 
-            # Run MySQL container
-            docker run -d \
-              --name mysql-container \
-              --network backend \
-              -e MYSQL_ROOT_PASSWORD=root1234 \
-              -e MYSQL_DATABASE=go_crud_simple_cicd \
-              -e MYSQL_USER=root \
-              -e MYSQL_PASSWORD=root1234 \
-              -p 3306:3306 \
-              --volume mysql_data:/var/lib/mysql \
-              mysql:latest
-
-            # Run the App container (depends on MySQL container)
-            docker run -d \
-              --name go-crud-simple-cicd \
-              --network backend \
-              -e SQL_HOST=mysql-container \
-              -e SQL_PORT=3306 \
-              -e SQL_USER=root \
-              -e SQL_PASSWORD=root1234 \
-              -e SQL_DB=go_crud_simple_cicd \
-              -p 1312:1312 \
-              achmadrizkinf298/go-crud-simple-cicd:latest
+            docker run -d -p 1312:1312 --name go-crud-simple-cicd achmadrizkinf298/go-crud-simple-cicd
+            
+            echo "Containers are up and running."
