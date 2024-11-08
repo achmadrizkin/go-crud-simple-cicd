@@ -17,6 +17,13 @@ func NewBookController(bookUseCase domain.BookUseCase) *bookController {
 	return &bookController{bookUseCase: bookUseCase}
 }
 
+func (d *bookController) HelloWorld(c *gin.Context) {
+	c.JSON(http.StatusOK, model.Response{
+		StatusCode: http.StatusOK,
+		Message:    "Hello world",
+	})
+}
+
 func (d *bookController) CreateBook(c *gin.Context) {
 	var book model.Book
 	if err := c.ShouldBindJSON(&book); err != nil {

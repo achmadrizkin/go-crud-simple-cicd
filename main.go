@@ -25,6 +25,7 @@ func main() {
 	bookUseCase := usecase.NewBookUseCase(bookRepo)
 	bookController := controller.NewBookController(bookUseCase)
 
+	router.GET("/", bookController.HelloWorld)
 	router.POST("/book", bookController.CreateBook)       // Create a new book
 	router.GET("/book/:id", bookController.GetBookByID)   // Get a book by ID
 	router.GET("/books", bookController.GetAllBooks)      // Get all books
