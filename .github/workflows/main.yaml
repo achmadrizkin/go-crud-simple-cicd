@@ -57,6 +57,8 @@ jobs:
             # Run the MySQL container with specified environment variables
             docker run -d --name mysql-container -e MYSQL_ROOT_PASSWORD=root1234 -e MYSQL_DATABASE=go-crud-simple-cicd -p 3306:3306 --network go-crud-network mysql
 
+            sleep 120
+
             # Run the go-crud-simple-cicd container on port 1312
             docker run -d -p 1312:1312 --name go-crud-simple-cicd \
             -e SQL_HOST=mysql-container \
