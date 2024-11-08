@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:latest
+    container_name: mysql-container
+    environment:
+      MYSQL_ROOT_PASSWORD: root1234
+      MYSQL_DATABASE: go_crud_simple_cicd
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root1234
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  app:
+    image: achmadrizkinf298/go-crud-simple-cicd
+    container_name: go-crud-simple-cicd
+    depends_on:
+      - mysql
+    environment:
+      SQL_HOST: mysql
+      SQL_PORT: 3306
+      SQL_USER: root
+      SQL_PASSWORD: root1234
+      SQL_DB: go_crud_simple_cicd
+    ports:
+      - "1312:1312"
+
+volumes:
+  mysql_data:

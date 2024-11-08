@@ -41,35 +41,6 @@ jobs:
           password: ${{ secrets.VPS_PASSWORD }}
           port: ${{ secrets.VPS_PORT }}
           script: |
-            # Display current user
             whoami
-            
-            # Stop and remove existing containers if they are running
-            docker stop go-crud-simple-cicd || true && docker rm go-crud-simple-cicd || true
-            docker stop mysql-container || true && docker rm mysql-container || true
-            
-            # Pull the latest application image
-            docker pull achmadrizkinf298/go-crud-simple-cicd
-            
-            # Run MySQL container with specified credentials
-            docker pull mysql:latest
-            docker run -d \
-              --name mysql-container \
-              -e MYSQL_ROOT_PASSWORD=root1234 \
-              -e MYSQL_DATABASE=go-crud-simple-cicd \
-              -e MYSQL_USER=root \
-              -e MYSQL_PASSWORD=root1234 \
-              -p 3306:3306 \
-              mysql:latest
-
-            # Run the application container, linking it to the MySQL container
-            docker run -d \
-              --name go-crud-simple-cicd \
-              --link mysql-container:mysql \
-              -e SQL_HOST=localhost \
-              -e SQL_PORT=3306 \
-              -e SQL_USER=root \
-              -e SQL_PASSWORD=root1234 \
-              -e SQL_DB=go-crud-simple-cicd \
-              -p 1312:1312 \
-              achmadrizkinf298/go-crud-simple-cicd
+            docker compose -f docker-compose.yml down || true
+            docker compose -f docker-compose.yml up -d
