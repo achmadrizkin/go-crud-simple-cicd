@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build:
+    environment: main
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Connect to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Set up docker buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build and Push
+        uses: docker/build-push-action@v4
+        with:
+          file: ./Dockerfile
+          push: true 
+          tags: achmadrizkinf298/go-crud-simple-cicd
+
+  deployment:
+    needs: build
+    environment: main 
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            # Display current user
+            whoami
+            
+            # Stop and remove existing containers if they are running
+            docker stop go-crud-simple-cicd || true && docker rm go-crud-simple-cicd || true
+            docker stop mysql-container || true && docker rm mysql-container || true
+            
+            # Pull the latest application image
+            docker pull achmadrizkinf298/go-crud-simple-cicd
+            
+            # Run MySQL container with specified credentials
+            docker pull mysql:latest
+            docker run -d \
+              --name mysql-container \
+              -e MYSQL_ROOT_PASSWORD=root1234 \
+              -e MYSQL_DATABASE=go-crud-simple-cicd \
+              -e MYSQL_USER=root \
+              -e MYSQL_PASSWORD=root1234 \
+              -p 3306:3306 \
+              mysql:latest
+
+            # Run the application container, linking it to the MySQL container
+            docker run -d \
+              --name go-crud-simple-cicd \
+              --link mysql-container:mysql \
+              -e SQL_HOST=localhost \
+              -e SQL_PORT=3306 \
+              -e SQL_USER=root \
+              -e SQL_PASSWORD=root1234 \
+              -e SQL_DB=go-crud-simple-cicd \
+              -p 1312:1312 \
+              achmadrizkinf298/go-crud-simple-cicd
