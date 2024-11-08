@@ -41,18 +41,29 @@ jobs:
           password: ${{ secrets.VPS_PASSWORD }}
           port: ${{ secrets.VPS_PORT }}
           script: |
+            # Ensure whoami works and logs in as expected
             whoami
+            
+            # Stop and remove any existing Go container instance
             docker stop go-crud-simple-cicd || true && docker rm go-crud-simple-cicd || true
 
+            # Pull latest images for MySQL and Go application
             docker pull mysql:latest
             docker pull achmadrizkinf298/go-crud-simple-cicd:latest
 
-            docker run -d --name mysql-db -p 3306:3306 \ -e MYSQL_ROOT_PASSWORD=root1234 \ -e MYSQL_DATABASE=go-crud-simple-cicd \ mysql:latest
+            # Run MySQL container in detached mode
+            docker run -d --name mysql-db -p 3306:3306 \
+              -e MYSQL_ROOT_PASSWORD=root1234 \
+              -e MYSQL_DATABASE=go-crud-simple-cicd \
+              mysql:latest
 
-            # Wait for MySQL to initialize (give it some time to set up)
+            # Wait for MySQL to initialize
             echo "Waiting for MySQL to start..."
             sleep 20
 
-            docker run -d -p 1312:1312 --name go-crud-simple-cicd achmadrizkinf298/go-crud-simple-cicd
-            
+            # Run Go application container in detached mode
+            docker run -d -p 1312:1312 --name go-crud-simple-cicd \
+              --link mysql-db:mysql \
+              achmadrizkinf298/go-crud-simple-cicd
+
             echo "Containers are up and running."
