@@ -5,6 +5,7 @@ RUN apk update && apk add --no-cache git
 WORKDIR /app
 
 COPY . .
+COPY --from=build /app/app.env app.env
 
 RUN go mod tidy 
 
