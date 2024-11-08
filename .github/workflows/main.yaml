@@ -48,6 +48,9 @@ jobs:
             docker pull mysql:latest
             docker pull achmadrizkinf298/go-crud-simple-cicd:latest
 
+            # Create the backend network
+            docker network create backend || true
+
             # Stop and remove any existing containers (if they exist)
             docker stop mysql-container || true
             docker rm mysql-container || true
