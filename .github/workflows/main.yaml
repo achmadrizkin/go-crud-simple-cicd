@@ -42,5 +42,5 @@ jobs:
           port: ${{ secrets.VPS_PORT }}
           script: |
             whoami
-            docker compose -f docker-compose.yml down || true
-            docker compose -f docker-compose.yml up -d
+            docker compose -f ./docker-compose.yml down || true
+            docker compose -f ./docker-compose.yml up -d
